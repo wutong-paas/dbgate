@@ -25,33 +25,33 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: |
-            dbgate/dbgate
-          flavor: |
-            latest=false
-          tags: |
-            type=raw,value=beta,enable=${{ contains(github.ref_name, '-docker.') || contains(github.ref_name, '-beta.') }}
+      # - name: Docker meta
+      #   id: meta
+      #   uses: docker/metadata-action@v4
+      #   with:
+      #     images: |
+      #       dbgate/dbgate
+      #     flavor: |
+      #       latest=false
+      #     tags: |
+      #       type=raw,value=beta,enable=${{ contains(github.ref_name, '-docker.') || contains(github.ref_name, '-beta.') }}
 
-            type=match,pattern=\d+.\d+.\d+,enable=${{ !contains(github.ref_name, '-docker.') && !contains(github.ref_name, '-beta.') }}
-            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-docker.') && !contains(github.ref_name, '-beta.') }}
+      #       type=match,pattern=\d+.\d+.\d+,enable=${{ !contains(github.ref_name, '-docker.') && !contains(github.ref_name, '-beta.') }}
+      #       type=raw,value=latest,enable=${{ !contains(github.ref_name, '-docker.') && !contains(github.ref_name, '-beta.') }}
 
-      - name: Docker alpine meta
-        id: alpmeta
-        uses: docker/metadata-action@v4
-        with:
-          images: |
-            dbgate/dbgate
-          flavor: |
-            latest=false
-          tags: |
-            type=raw,value=beta-alpine,enable=${{ contains(github.ref_name, '-docker.') || contains(github.ref_name, '-beta.') }}
+      # - name: Docker alpine meta
+      #   id: alpmeta
+      #   uses: docker/metadata-action@v4
+      #   with:
+      #     images: |
+      #       dbgate/dbgate
+      #     flavor: |
+      #       latest=false
+      #     tags: |
+      #       type=raw,value=beta-alpine,enable=${{ contains(github.ref_name, '-docker.') || contains(github.ref_name, '-beta.') }}
 
-            type=match,pattern=\d+.\d+.\d+,suffix=-alpine,enable=${{ !contains(github.ref_name, '-docker.') && !contains(github.ref_name, '-beta.') }}
-            type=raw,value=alpine,enable=${{ !contains(github.ref_name, '-docker.') && !contains(github.ref_name, '-beta.') }}
+      #       type=match,pattern=\d+.\d+.\d+,suffix=-alpine,enable=${{ !contains(github.ref_name, '-docker.') && !contains(github.ref_name, '-beta.') }}
+      #       type=raw,value=alpine,enable=${{ !contains(github.ref_name, '-docker.') && !contains(github.ref_name, '-beta.') }}
 
       - name: Use Node.js 14.x
         uses: actions/setup-node@v1
@@ -77,12 +77,19 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Login to Huaweiyun swr
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.DOMESTIC_DOCKER_SERVER }}
+          username: ${{ secrets.DOMESTIC_DOCKER_USERNAME }}
+          password: ${{ secrets.DOMESTIC_DOCKER_PASSWORD }}
+
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
           push: true
           context: ./docker
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: wutongpaas/dbgate:latest,swr.cn-southwest-2.myhuaweicloud.com/wutong/dbgate:latest
           platforms: linux/amd64,linux/arm64,linux/arm/v7
 
       - name: Build and push alpine
@@ -91,5 +98,5 @@ jobs:
           push: true
           context: ./docker
           file: ./docker/Dockerfile-alpine
-          tags: ${{ steps.alpmeta.outputs.tags }}
+          tags: wutongpaas/dbgate:alpine,swr.cn-southwest-2.myhuaweicloud.com/wutong/dbgate:alpine
           platforms: linux/amd64,linux/arm64,linux/arm/v7

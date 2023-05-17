@@ -28,7 +28,7 @@ export default function uploadFiles(files) {
       return;
     }
 
-    const maxSize = 32 * 1024 * 1024;
+    const maxSize = 1024 * 1024 * 1024;
     if (parseInt(file.size, 10) >= maxSize) {
       showModal(ErrorMessageModal, {
         title: 'Upload error',
